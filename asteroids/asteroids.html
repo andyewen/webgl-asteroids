@@ -123,15 +123,6 @@
         }
       }
 
-      function Vec2(x, y) {
-        this.x = x || 0;
-        this.y = y || 0;
-      }
-
-      function vecAdd(v1, v2) { return new Vec2(v1.x + v2.x, v1.y + v2.y); }
-      function vecSub(v1, v2) { return new Vec2(v1.x - v2.x, v1.y - v2.y); }
-      function vecMul(v1, s) { return new Vec2(v1.x * s, v1.y * s); }
-
       function setMatrixUniforms() {
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
@@ -149,18 +140,18 @@
         this.vertexBuffer.itemSize = 3;
         this.vertexBuffer.numItems = 5;
 
-        this.position = new Vec2();
-        this.velocity = new Vec2();
+        this.position = vec2.create();
+        this.velocity = vec2.create();
         this.rotation = 0;
       }
 
       Ship.prototype = {
         update: function(controls) {
           if (controls.isKeyDown(38)) {
-            var acceleration = new Vec2(Math.cos(this.rotation),
-                                        Math.sin(this.rotation));
-            acceleration = vecMul(acceleration, this.ACCELERATION);
-            this.velocity = vecAdd(this.velocity, acceleration);
+            var acceleration = vec2.fromValues(Math.cos(this.rotation),
+                                               Math.sin(this.rotation));
+            vec2.scale(acceleration, acceleration, this.ACCELERATION);
+            vec2.add(this.velocity, this.velocity, acceleration);
           }
           var deltaRot = 0;
           if (controls.isKeyDown(37)) {
@@ -170,13 +161,13 @@
             deltaRot -= 0.1;
           }
 
-          this.velocity = vecMul(this.velocity, this.FRICTION);
-
-          this.position = vecAdd(this.position, this.velocity);
+          vec2.scale(this.velocity, this.velocity, this.FRICTION);
+          vec2.add(this.position, this.position, this.velocity);
           this.rotation += deltaRot;
         },
         draw: function(mvMatrix) {
-          mat4.translate(mvMatrix, mvMatrix, [this.position.x, this.position.y, 0]);
+          mat4.translate(mvMatrix, mvMatrix, [this.position[0],
+                                              this.position[1], 0]);
           mat4.rotateZ(mvMatrix, mvMatrix, this.rotation);
 
           gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
