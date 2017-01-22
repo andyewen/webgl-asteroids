@@ -161,7 +161,7 @@
             deltaRot -= 0.1;
           }
 
-          vec2.scale(this.velocity, this.velocity, this.FRICTION);
+          vec2.scale(this.velocity, this.velocity, 1 - this.FRICTION);
           vec2.add(this.position, this.position, this.velocity);
           this.rotation += deltaRot;
         },
@@ -178,7 +178,7 @@
           gl.drawArrays(gl.LINE_STRIP, 0, this.vertexBuffer.numItems);
         },
         ACCELERATION: 0.005,
-        FRICTION: 0.985,
+        FRICTION: 0.015,
       }
 
       function update() {
@@ -199,8 +199,7 @@
         ship.draw(mvMatrix);
         matStack.pop();
       }
-    </script>
-    <script>
+
       var canvas = document.getElementsByTagName("canvas")[0];
       initGL(canvas);
       initShaders();
