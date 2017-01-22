@@ -2,10 +2,30 @@
 <html>
   <head>
     <title>Asteroids</title>
+    <style>
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+      }
+      .container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      canvas {
+        border: 1px solid white;
+      }
+    </style>
     <script src="../lib/gl-matrix-min.js"></script>
   </head>
   <body>
-    <canvas width=640 height=480></canvas>
+    <div class="container">
+      <canvas width=1024 height=769></canvas>
+    </div>
 
     <script id="shader-fs" type="x-shader/x-fragment">
       precision mediump float;
@@ -106,9 +126,16 @@
         shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
       }
 
-      var mvMatrix = mat4.create();
       var pMatrix = mat4.create();
+      var w, h;
+      function initViewport() {
+        var aspectRatio = gl.viewportWidth / gl.viewportHeight;
+        w = 40;
+        h = w / aspectRatio;
+        mat4.ortho(pMatrix, -w / 2, w / 2, -h / 2, h / 2, -10, 10);
+      }
 
+      var mvMatrix = mat4.create();
       matStack = {
         stack: [],
         push: function() {
@@ -128,17 +155,23 @@
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
       }
 
+      function wrapPosition(object) {
+        if (object.position[0] > w / 2) { object.position[0] -= w; }
+        if (object.position[0] < -w / 2) { object.position[0] += w; }
+        if (object.position[1] > h / 2) { object.position[1] -= h; }
+        if (object.position[1] < -h / 2) { object.position[1] += h; }
+      }
+
       function Ship() {
         this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         vertices = new Float32Array([1, 0, 0,
                                      -1, -0.6, 0,
                                      -0.7, 0, 0,
-                                     -1, 0.6, 0,
-                                     1, 0, 0]);
+                                     -1, 0.6, 0]);
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
         this.vertexBuffer.itemSize = 3;
-        this.vertexBuffer.numItems = 5;
+        this.vertexBuffer.numItems = 4;
 
         this.position = vec2.create();
         this.velocity = vec2.create();
@@ -164,6 +197,8 @@
           vec2.scale(this.velocity, this.velocity, 1 - this.FRICTION);
           vec2.add(this.position, this.position, this.velocity);
           this.rotation += deltaRot;
+
+          wrapPosition(this);
         },
         draw: function(mvMatrix) {
           mat4.translate(mvMatrix, mvMatrix, [this.position[0],
@@ -175,38 +210,88 @@
                                  this.vertexBuffer.itemSize,
                                  gl.FLOAT, false, 0, 0);
           setMatrixUniforms();
-          gl.drawArrays(gl.LINE_STRIP, 0, this.vertexBuffer.numItems);
+          gl.drawArrays(gl.LINE_LOOP, 0, this.vertexBuffer.numItems);
         },
         ACCELERATION: 0.005,
         FRICTION: 0.015,
       }
 
+      function Asteroid(radius) {
+        this.vertexBuffer = gl.createBuffer();
+        vertices = [];
+        for (var i = 0; i < 12; i++) {
+          var rotation = (i / 12) * 2 * Math.PI;
+          var vertex = [Math.cos(rotation), Math.sin(rotation), 0];
+          var vertDist = radius + (Math.random() * 0.6 * radius) - 0.3 * radius;
+          vec3.scale(vertex, vertex, vertDist);
+          vertices = vertices.concat(vertex);
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices),
+                      gl.STATIC_DRAW);
+        this.vertexBuffer.itemSize = 3;
+        this.vertexBuffer.numItems = 12;
+
+        this.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
+        this.velocity = vec2.random(vec2.create(), 0.01);
+        this.radius = radius;
+      }
+
+      Asteroid.prototype = {
+        update: function() {
+          vec2.add(this.position, this.position, this.velocity);
+          wrapPosition(this);
+        },
+        draw: function(mvMatrix) {
+          mat4.translate(mvMatrix, mvMatrix, [this.position[0],
+                                              this.position[1], 0]);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+          gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+                                 this.vertexBuffer.itemSize,
+                                 gl.FLOAT, false, 0, 0);
+          setMatrixUniforms();
+          gl.drawArrays(gl.LINE_LOOP, 0, this.vertexBuffer.numItems);
+        }
+      }
+
       function update() {
         ship.update(controls);
+
+        for (var i = 0; i < asteroids.length; i++) {
+          asteroids[i].update();
+        }
       }
 
       function draw() {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        var aspectRatio = gl.viewportWidth / gl.viewportHeight;
-        var w = 20;
-        var h = w / aspectRatio;
-        mat4.ortho(pMatrix, -w, w, -h, h, -10, 10);
 
         mat4.identity(mvMatrix);
 
         matStack.push();
         ship.draw(mvMatrix);
         matStack.pop();
+
+        for (var i = 0; i < asteroids.length; i++) {
+          matStack.push();
+          asteroids[i].draw(mvMatrix);
+          matStack.pop();
+        }
       }
 
       var canvas = document.getElementsByTagName("canvas")[0];
       initGL(canvas);
+      initViewport();
       initShaders();
 
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
       ship = new Ship();
+      asteroids = [];
+      for (var i = 0; i < 16; i++) {
+        asteroids.push(new Asteroid(2.2));
+      }
 
       function tick() {
         requestAnimationFrame(tick);
