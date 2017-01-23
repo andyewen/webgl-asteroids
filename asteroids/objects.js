@@ -1,14 +1,24 @@
 function Ship() {
   this.vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-  vertices = new Float32Array([1, 0, 0,
+  vertices = new Float32Array([ 1, 0, 0,
+                               -1, -0.6, 0,
                                -1, -0.6, 0,
                                -0.7, 0, 0,
-                               -1, 0.6, 0]);
+                               -0.7, 0, 0,
+                               -1, 0.6, 0,
+                               -1, 0.6, 0,
+                                1, 0, 0,
+                                -0.8, -0.2, 0,
+                                -1.4, 0, 0,
+                                -1.4, 0, 0,
+                                -0.8, 0.2, 0]);
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
   this.vertexBuffer.itemSize = 3;
-  this.vertexBuffer.numItems = 4;
+  this.vertexBuffer.numItems = 12;
+  this.vertexBuffer.numItemsNoBoost = 8;
 
+  this.boosting = false;
   this.position = vec2.create();
   this.velocity = vec2.create();
   this.rotation = 0;
@@ -16,11 +26,14 @@ function Ship() {
 
 Ship.prototype = {
   update: function(controls) {
+    this.boosting = false;
     if (controls.isKeyDown(38)) {
       var acceleration = vec2.fromValues(Math.cos(this.rotation),
                                          Math.sin(this.rotation));
       vec2.scale(acceleration, acceleration, this.ACCELERATION);
       vec2.add(this.velocity, this.velocity, acceleration);
+
+      this.boosting = true;
     }
     var deltaRot = 0;
     if (controls.isKeyDown(37)) {
@@ -46,7 +59,7 @@ Ship.prototype = {
                            this.vertexBuffer.itemSize,
                            gl.FLOAT, false, 0, 0);
     setMatrixUniforms();
-    gl.drawArrays(gl.LINE_LOOP, 0, this.vertexBuffer.numItems);
+    gl.drawArrays(gl.LINES, 0, this.boosting ? this.vertexBuffer.numItems : this.vertexBuffer.numItemsNoBoost);
   },
   ACCELERATION: 0.005,
   FRICTION: 0.015,
