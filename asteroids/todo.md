@@ -1,5 +1,5 @@
 # Todo
-- Add flames behind ship when accelerating.
+- ~~Add flames behind ship when accelerating.~~
 - Add game states (start, gameover, playing and paused).
 - Add radial collisions.
 - Add missiles.
