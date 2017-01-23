@@ -5,6 +5,7 @@
 - Add missiles.
 - Add asteroid splitting.
 - Add asteroid spawn collision checking.
+- Add ship trail.
 - Add bloom shader for a vector monitor feel.
 - Add line collisions.
 - Add quadtree collision hinting.
