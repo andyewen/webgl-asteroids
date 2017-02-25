@@ -1,18 +1,43 @@
+function GameObject() {};
+GameObject.prototype = {
+  getTransformedShape: function() {
+    return this.shape.map(function(vert) {
+      var transformMatrix = mat2d.create();
+      mat2d.translate(transformMatrix, this.position, transformMatrix);
+      mat2d.rotate(transformMatrix, this.rotation, transformMatrix);
+      vert = vec2.clone(vert);
+      vec2.transformMat2d(vert, vert, transformMatrix);
+      return vert
+    });
+  }
+};
+
+var shipShape = [
+  [ 1, 0 ],
+  [ -1, -0.6 ],
+  [ -1, -0.6 ],
+  [ -0.7, 0 ],
+  [ -0.7, 0 ],
+  [ -1, 0.6 ],
+  [ -1, 0.6 ],
+  [ 1, 0 ],
+  [ -0.8, -0.2 ],
+  [ -1.4, 0 ],
+  [ -1.4, 0 ],
+  [ -0.8, 0.2 ]
+].map(function(vert) {
+  return vec2.fromValues(vert[0], vert[1]);
+});
+
 function Ship() {
   this.vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-  vertices = new Float32Array([ 1, 0, 0,
-                               -1, -0.6, 0,
-                               -1, -0.6, 0,
-                               -0.7, 0, 0,
-                               -0.7, 0, 0,
-                               -1, 0.6, 0,
-                               -1, 0.6, 0,
-                                1, 0, 0,
-                                -0.8, -0.2, 0,
-                                -1.4, 0, 0,
-                                -1.4, 0, 0,
-                                -0.8, 0.2, 0]);
+  this.shape = shipShape;
+  var vertices = new Float32Array(this.shape.map(function(vert){
+    return [vert[0], vert[1], 0];
+  }).reduce(function(a, b) {
+    return a.concat(b);
+  }));
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
   this.vertexBuffer.itemSize = 3;
   this.vertexBuffer.numItems = 12;
@@ -24,57 +49,64 @@ function Ship() {
   this.rotation = 0;
 }
 
-Ship.prototype = {
-  update: function(controls) {
-    this.boosting = false;
-    if (controls.isKeyDown(38)) {
-      var acceleration = vec2.fromValues(Math.cos(this.rotation),
-                                         Math.sin(this.rotation));
-      vec2.scale(acceleration, acceleration, this.ACCELERATION);
-      vec2.add(this.velocity, this.velocity, acceleration);
+Ship.prototype = new GameObject();
+Ship.prototype.update = function(controls) {
+  this.boosting = false;
+  if (controls.isKeyDown(38)) {
+    var acceleration = vec2.fromValues(Math.cos(this.rotation),
+                                       Math.sin(this.rotation));
+    vec2.scale(acceleration, acceleration, this.ACCELERATION);
+    vec2.add(this.velocity, this.velocity, acceleration);
 
-      this.boosting = true;
-    }
-    var deltaRot = 0;
-    if (controls.isKeyDown(37)) {
-      deltaRot += 0.1;
-    }
-    if (controls.isKeyDown(39)) {
-      deltaRot -= 0.1;
-    }
+    this.boosting = true;
+  }
+  var deltaRot = 0;
+  if (controls.isKeyDown(37)) {
+    deltaRot += 0.1;
+  }
+  if (controls.isKeyDown(39)) {
+    deltaRot -= 0.1;
+  }
 
-    vec2.scale(this.velocity, this.velocity, 1 - this.FRICTION);
-    vec2.add(this.position, this.position, this.velocity);
-    this.rotation += deltaRot;
+  vec2.scale(this.velocity, this.velocity, 1 - this.FRICTION);
+  vec2.add(this.position, this.position, this.velocity);
+  this.rotation += deltaRot;
 
-    wrapPosition(this);
-  },
-  draw: function(mvMatrix) {
-    mat4.translate(mvMatrix, mvMatrix, [this.position[0],
-                                        this.position[1], 0]);
-    mat4.rotateZ(mvMatrix, mvMatrix, this.rotation);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-                           this.vertexBuffer.itemSize,
-                           gl.FLOAT, false, 0, 0);
-    setMatrixUniforms();
-    gl.drawArrays(gl.LINES, 0, this.boosting ? this.vertexBuffer.numItems : this.vertexBuffer.numItemsNoBoost);
-  },
-  ACCELERATION: 0.005,
-  FRICTION: 0.015,
+  wrapPosition(this);
 }
+
+Ship.prototype.draw = function(mvMatrix) {
+  mat4.translate(mvMatrix, mvMatrix, [this.position[0],
+                                      this.position[1], 0]);
+  mat4.rotateZ(mvMatrix, mvMatrix, this.rotation);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+                         this.vertexBuffer.itemSize,
+                         gl.FLOAT, false, 0, 0);
+  setMatrixUniforms();
+  gl.drawArrays(gl.LINES, 0, this.boosting ? this.vertexBuffer.numItems : this.vertexBuffer.numItemsNoBoost);
+}
+
+Ship.prototype.ACCELERATION = 0.005;
+Ship.prototype.FRICTION = 0.015;
+
 
 function Asteroid(radius) {
   this.vertexBuffer = gl.createBuffer();
-  vertices = [];
+  this.shape = []
   for (var i = 0; i < 12; i++) {
     var rotation = (i / 12) * 2 * Math.PI;
-    var vertex = [Math.cos(rotation), Math.sin(rotation), 0];
+    var vertex = [Math.cos(rotation), Math.sin(rotation)];
     var vertDist = radius + (Math.random() * 0.6 * radius) - 0.3 * radius;
-    vec3.scale(vertex, vertex, vertDist);
-    vertices = vertices.concat(vertex);
+    vec2.scale(vertex, vertex, vertDist);
+    this.shape.push(vertex);
   }
+  var vertices = new Float32Array(this.shape.map(function(vert){
+    return [vert[0], vert[1], 0];
+  }).reduce(function(a, b) {
+    return a.concat(b);
+  }));
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices),
                 gl.STATIC_DRAW);

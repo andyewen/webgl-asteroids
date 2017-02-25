@@ -129,6 +129,7 @@ initShaders();
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
 ship = new Ship();
+//console.log(ship.getTransformedShape());
 asteroids = [];
 for (var i = 0; i < 16; i++) {
   asteroids.push(new Asteroid(2.2));
