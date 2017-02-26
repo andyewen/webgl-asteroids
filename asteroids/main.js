@@ -96,12 +96,33 @@ function wrapPosition(object) {
   if (object.position[1] < -h / 2) { object.position[1] += h; }
 }
 
+function checkCollisions() {
+  // Returns the asteroid we collided with.
+  for (var asteroidI = 0; asteroidI < asteroids.length; asteroidI++) {
+    asteroid = asteroids[asteroidI];
+
+    var shipLines = ship.getTransformedLines();
+    var asteroidLines = asteroid.getTransformedLines();
+    // Check if any of the ship's lines intersect with any of the asteroid's.
+    for (var i = 0; i < shipLines.length; i++) {
+      for (var j = 0; j < asteroidLines.length; j++) {
+        if (linesIntersect(shipLines[i], asteroidLines[j])) {
+          collideAlert();
+          return asteroid;
+        }
+      }
+    }
+  }
+}
+
 function update() {
   ship.update(controls);
 
   for (var i = 0; i < asteroids.length; i++) {
     asteroids[i].update();
   }
+
+  checkCollisions();
 }
 
 function draw() {
@@ -129,9 +150,9 @@ initShaders();
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
 ship = new Ship();
-//console.log(ship.getTransformedShape());
+console.log(ship.getTransformedShape());
 asteroids = [];
-for (var i = 0; i < 16; i++) {
+for (var i = 0; i < 12; i++) {
   asteroids.push(new Asteroid(2.2));
 }
 

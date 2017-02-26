@@ -1,14 +1,29 @@
 function GameObject() {};
 GameObject.prototype = {
   getTransformedShape: function() {
-    return this.shape.map(function(vert) {
+    var self = this;
+    return self.shape.map(function(vert) {
       var transformMatrix = mat2d.create();
-      mat2d.translate(transformMatrix, this.position, transformMatrix);
-      mat2d.rotate(transformMatrix, this.rotation, transformMatrix);
+      mat2d.translate(transformMatrix, transformMatrix, self.position);
+      mat2d.rotate(transformMatrix, transformMatrix, self.rotation);
       vert = vec2.clone(vert);
       vec2.transformMat2d(vert, vert, transformMatrix);
       return vert
     });
+  },
+  getTransformedLines: function() {
+    var lines = [];
+    var shape = this.getTransformedShape();
+    for (var i = 0; i < shape.length; i++) {
+      var from = vec2.clone(shape[i]);
+      if (i + 1 < shape.length) {
+        var to = shape[i + 1];
+      } else {
+        var to = vec2.clone(shape[0]);
+      }
+      lines.push([from, to]);
+    }
+    return lines;
   }
 };
 
@@ -97,7 +112,7 @@ function Asteroid(radius) {
   this.shape = []
   for (var i = 0; i < 12; i++) {
     var rotation = (i / 12) * 2 * Math.PI;
-    var vertex = [Math.cos(rotation), Math.sin(rotation)];
+    var vertex = vec2.fromValues(Math.cos(rotation), Math.sin(rotation));
     var vertDist = radius + (Math.random() * 0.6 * radius) - 0.3 * radius;
     vec2.scale(vertex, vertex, vertDist);
     this.shape.push(vertex);
@@ -114,24 +129,27 @@ function Asteroid(radius) {
   this.vertexBuffer.numItems = 12;
 
   this.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
+  this.rotation = 0;
   this.velocity = vec2.random(vec2.create(), 0.01);
   this.radius = radius;
 }
 
-Asteroid.prototype = {
-  update: function() {
-    vec2.add(this.position, this.position, this.velocity);
-    wrapPosition(this);
-  },
-  draw: function(mvMatrix) {
-    mat4.translate(mvMatrix, mvMatrix, [this.position[0],
-                                        this.position[1], 0]);
+Asteroid.prototype = new GameObject();
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-                           this.vertexBuffer.itemSize,
-                           gl.FLOAT, false, 0, 0);
-    setMatrixUniforms();
-    gl.drawArrays(gl.LINE_LOOP, 0, this.vertexBuffer.numItems);
-  }
+Asteroid.prototype.update = function() {
+  vec2.add(this.position, this.position, this.velocity);
+  wrapPosition(this);
+}
+
+Asteroid.prototype.draw = function(mvMatrix) {
+  mat4.translate(mvMatrix, mvMatrix, [this.position[0],
+                                      this.position[1], 0]);
+  mat4.rotateZ(mvMatrix, mvMatrix, this.rotation);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+                         this.vertexBuffer.itemSize,
+                         gl.FLOAT, false, 0, 0);
+  setMatrixUniforms();
+  gl.drawArrays(gl.LINE_LOOP, 0, this.vertexBuffer.numItems);
 }
