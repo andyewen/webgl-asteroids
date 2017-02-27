@@ -1,13 +1,13 @@
 # Todo
 - ~~Add flames behind ship when accelerating.~~
 - Add game states (start, gameover, playing and paused).
-- Add radial collisions.
+- ~~Add radial collisions.~~
 - Add missiles.
 - Add asteroid splitting.
 - Add asteroid spawn collision checking.
 - Add ship trail.
 - Add bloom shader for a vector monitor feel.
-- Add line collisions.
+- ~~Add line collisions.~~
 - Add quadtree collision hinting.
 - Add UFOs.
 - Support window resizing.
