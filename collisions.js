@@ -20,7 +20,7 @@ function linesIntersect(l1, l2) {
   vec2.subtract(t, t, p);
   t = crossProduct(t, s);
   t /= d;
-  // Could return early here...
+
   var u = vec2.clone(q);
   vec2.subtract(u, u, p);
   u = crossProduct(u, r);
