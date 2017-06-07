@@ -65,27 +65,32 @@ function Ship() {
 }
 
 Ship.prototype = new GameObject();
-Ship.prototype.update = function(controls) {
+Ship.prototype.update = function(dt, controls) {
   this.boosting = false;
   if (controls.isKeyDown(38)) {
     var acceleration = vec2.fromValues(Math.cos(this.rotation),
                                        Math.sin(this.rotation));
-    vec2.scale(acceleration, acceleration, this.ACCELERATION);
+    vec2.scale(acceleration, acceleration, dt * this.ACCELERATION);
     vec2.add(this.velocity, this.velocity, acceleration);
 
     this.boosting = true;
   }
   var deltaRot = 0;
   if (controls.isKeyDown(37)) {
-    deltaRot += 0.1;
+    deltaRot += this.ROTATION_RATE;
   }
   if (controls.isKeyDown(39)) {
-    deltaRot -= 0.1;
+    deltaRot -= this.ROTATION_RATE;
   }
 
-  vec2.scale(this.velocity, this.velocity, 1 - this.FRICTION);
-  vec2.add(this.position, this.position, this.velocity);
-  this.rotation += deltaRot;
+  var frictionVector = vec2.clone(this.velocity);
+  vec2.scale(frictionVector, frictionVector, -1 * this.FRICTION * dt);
+  vec2.add(this.velocity, this.velocity, frictionVector);
+
+  var frameVelocity = vec2.clone(this.velocity);
+  vec2.scale(frameVelocity, frameVelocity, dt)
+  vec2.add(this.position, this.position, frameVelocity);
+  this.rotation += deltaRot * dt;
 
   wrapPosition(this);
 }
@@ -103,8 +108,9 @@ Ship.prototype.draw = function(mvMatrix) {
   gl.drawArrays(gl.LINES, 0, this.boosting ? this.vertexBuffer.numItems : this.vertexBuffer.numItemsNoBoost);
 }
 
-Ship.prototype.ACCELERATION = 0.005;
-Ship.prototype.FRICTION = 0.015;
+Ship.prototype.ROTATION_RATE = 5;
+Ship.prototype.ACCELERATION = 15;
+Ship.prototype.FRICTION = 0.6;
 
 
 function Asteroid(radius) {
@@ -130,14 +136,17 @@ function Asteroid(radius) {
 
   this.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
   this.rotation = 0;
-  this.velocity = vec2.random(vec2.create(), 0.01);
+  this.velocity = vec2.random(vec2.create(), 0.8);
   this.radius = radius;
 }
 
 Asteroid.prototype = new GameObject();
 
-Asteroid.prototype.update = function() {
-  vec2.add(this.position, this.position, this.velocity);
+Asteroid.prototype.update = function(dt) {
+  var frameVelocity = vec2.clone(this.velocity);
+  vec2.scale(frameVelocity, frameVelocity, dt);
+  vec2.add(this.position, this.position, frameVelocity);
+
   wrapPosition(this);
 }
 

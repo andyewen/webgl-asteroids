@@ -116,10 +116,13 @@ function checkCollisions() {
 }
 
 function update() {
-  ship.update(controls);
+  var now = new Date();
+  var dt = (now - lastFrameTime) / 1000;
+  lastFrameTime = now;
 
+  ship.update(dt, controls);
   for (var i = 0; i < asteroids.length; i++) {
-    asteroids[i].update();
+    asteroids[i].update(dt);
   }
 
   checkCollisions();
@@ -154,6 +157,8 @@ asteroids = [];
 for (var i = 0; i < 12; i++) {
   asteroids.push(new Asteroid(2.2));
 }
+
+var lastFrameTime = new Date();
 
 function tick() {
   requestAnimationFrame(tick);
