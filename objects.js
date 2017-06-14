@@ -44,7 +44,7 @@ var shipShape = [
   return vec2.fromValues(vert[0], vert[1]);
 });
 
-function Ship() {
+function Ship(missiles) {
   this.vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
   this.shape = shipShape;
@@ -59,6 +59,9 @@ function Ship() {
   this.vertexBuffer.numItemsNoBoost = 8;
 
   this.boosting = false;
+  this.missiles = missiles;
+  this.missileCooldown = 0;
+
   this.position = vec2.create();
   this.velocity = vec2.create();
   this.rotation = 0;
@@ -75,6 +78,15 @@ Ship.prototype.update = function(dt, controls) {
 
     this.boosting = true;
   }
+
+  this.missileCooldown -= dt;
+  this.missileCooldown = Math.max(this.missileCooldown, 0);
+  if (this.missileCooldown <= 0 && controls.isKeyDown(90)) {
+    this.missiles.push(new Missile(vec2.clone(this.position), this.rotation));
+    this.missileCooldown = this.MISSILE_COOLDOWN;
+  }
+
+
   var deltaRot = 0;
   if (controls.isKeyDown(37)) {
     deltaRot += this.ROTATION_RATE;
@@ -111,6 +123,49 @@ Ship.prototype.draw = function(mvMatrix) {
 Ship.prototype.ROTATION_RATE = 5;
 Ship.prototype.ACCELERATION = 15;
 Ship.prototype.FRICTION = 0.6;
+Ship.prototype.MISSILE_COOLDOWN = 0.2;
+
+
+function Missile(position, rotation) {
+  this.vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+  var vertices = new Float32Array([-0.3, 0, 0, 0.3, 0, 0]);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  this.vertexBuffer.itemSize = 3;
+  this.vertexBuffer.numItems = 2;
+
+  this.position = position || vec2.create();
+  this.rotation = rotation || 0;
+
+  this.velocity = vec2.fromValues(Math.cos(this.rotation),
+                                  Math.sin(this.rotation));
+  vec2.scale(this.velocity, this.velocity, this.SPEED);
+}
+
+Missile.prototype = new GameObject();
+
+Missile.prototype.update = function(dt) {
+  var frameVelocity = vec2.clone(this.velocity);
+  vec2.scale(frameVelocity, frameVelocity, dt);
+  vec2.add(this.position, this.position, frameVelocity);
+
+  wrapPosition(this);
+}
+
+Missile.prototype.draw = function(mvMatrix) {
+  mat4.translate(mvMatrix, mvMatrix, [this.position[0],
+                                      this.position[1], 0]);
+  mat4.rotateZ(mvMatrix, mvMatrix, this.rotation);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+                         this.vertexBuffer.itemSize,
+                         gl.FLOAT, false, 0, 0);
+  setMatrixUniforms();
+  gl.drawArrays(gl.LINE_STRIP, 0, this.vertexBuffer.numItems);
+}
+
+Missile.prototype.SPEED = 17;
 
 
 function Asteroid(radius) {

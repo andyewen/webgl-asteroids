@@ -129,6 +129,10 @@ function update() {
     asteroids[i].update(dt);
   }
 
+  missiles.forEach(function(m) {
+    m.update(dt);
+  })
+
   checkCollisions();
 }
 
@@ -147,6 +151,12 @@ function draw() {
     asteroids[i].draw(mvMatrix);
     matStack.pop();
   }
+
+  for (var i = 0; i < missiles.length; i++) {
+    matStack.push();
+    missiles[i].draw(mvMatrix);
+    matStack.pop();
+  }
 }
 
 var canvas = document.getElementsByTagName("canvas")[0];
@@ -156,7 +166,8 @@ initShaders();
 
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-ship = new Ship();
+missiles = []
+ship = new Ship(missiles);
 asteroids = [];
 for (var i = 0; i < 12; i++) {
   asteroids.push(new Asteroid(2.2));
