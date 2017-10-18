@@ -17,7 +17,11 @@
         align-items: center;
       }
       canvas {
-        border: 1px solid white;
+        border: 1px solid #777;
+      }
+      .controls {
+        font-family: monospace;
+        color: #777;
       }
     </style>
     <script src="./lib/gl-matrix-min.js"></script>
@@ -27,7 +31,10 @@
   </head>
   <body>
     <div class="container">
-      <canvas width=640 height=480></canvas>
+      <div>
+        <canvas width=640 height=480></canvas>
+        <div class="controls">arrow keys to move, z to shoot</div>
+      </div>
     </div>
 
     <script src="./main.js"></script>
