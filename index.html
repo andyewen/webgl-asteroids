@@ -8,6 +8,8 @@
         width: 100%;
         height: 100%;
         background-color: black;
+        font-family: monospace;
+        color: #777;
       }
       .container {
         width: 100%;
@@ -20,8 +22,7 @@
         border: 1px solid #777;
       }
       .controls {
-        font-family: monospace;
-        color: #777;
+        float: right;
       }
     </style>
     <script src="./lib/gl-matrix-min.js"></script>
@@ -33,7 +34,10 @@
     <div class="container">
       <div>
         <canvas width=640 height=480></canvas>
-        <div class="controls">arrow keys to move, z to shoot</div>
+        <div>
+          <div class="controls">arrow keys to move, z to shoot</div>
+          <div>score: <span id="score"></span></div>
+        </div>
       </div>
     </div>
 

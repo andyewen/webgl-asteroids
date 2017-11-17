@@ -102,11 +102,12 @@ function wrapPosition(object) {
 
 function checkCollisions() {
   asteroids.forEach(function(asteroid) {
-    missiles.forEach(function(missile) {
+    ship.missiles.forEach(function(missile) {
       var overlapping = circlesOverlap(asteroid.position, asteroid.radius, missile.position, missile.radius),
           bothAlive = !(asteroid.dead && missile.dead);
       if (overlapping && bothAlive) {
         asteroid.dead = missile.dead = true;
+        score += 1;
       }
     });
 
@@ -123,7 +124,7 @@ function checkCollisions() {
     }
     return true;
   }
-  ship.missiles = missiles = missiles.filter(filterAndCleanUp);
+  ship.missiles = ship.missiles.filter(filterAndCleanUp);
   asteroids = asteroids.filter(filterAndCleanUp);
 }
 
@@ -132,16 +133,22 @@ function update() {
   var dt = (now - lastFrameTime) / 1000;
   lastFrameTime = now;
 
+  if (!asteroids.length) {
+    for (var i = 0; i < 12; i++) {
+      asteroids.push(new Asteroid(2.2));
+    }
+  }
+
   ship.update(dt, controls);
   for (var i = 0; i < asteroids.length; i++) {
     asteroids[i].update(dt);
   }
 
-  missiles.forEach(function(m) {
-    m.update(dt);
-  })
-
   checkCollisions();
+
+  if (scoreElement) {
+    scoreElement.textContent = score;
+  }
 }
 
 function draw() {
@@ -160,26 +167,24 @@ function draw() {
     matStack.pop();
   }
 
-  for (var i = 0; i < missiles.length; i++) {
+  for (var i = 0; i < ship.missiles.length; i++) {
     matStack.push();
-    missiles[i].draw(mvMatrix);
+    ship.missiles[i].draw(mvMatrix);
     matStack.pop();
   }
 }
 
-var canvas = document.getElementsByTagName("canvas")[0];
+var canvas = document.getElementsByTagName("canvas")[0],
+    scoreElement = document.getElementById('score');
 initGL(canvas);
 initViewport();
 initShaders();
 
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-missiles = []
-ship = new Ship(missiles);
+score = 0;
+ship = new Ship();
 asteroids = [];
-for (var i = 0; i < 12; i++) {
-  asteroids.push(new Asteroid(2.2));
-}
 
 var lastFrameTime = new Date();
 

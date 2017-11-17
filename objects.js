@@ -44,7 +44,7 @@ var shipShape = [
   return vec2.fromValues(vert[0], vert[1]);
 });
 
-function Ship(missiles) {
+function Ship() {
   this.vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
   this.shape = shipShape;
@@ -59,7 +59,7 @@ function Ship(missiles) {
   this.vertexBuffer.numItemsNoBoost = 8;
 
   this.boosting = false;
-  this.missiles = missiles;
+  this.missiles = [];
   this.missileCooldown = 0;
   this.radius = 0;
 
@@ -106,6 +106,11 @@ Ship.prototype.update = function(dt, controls) {
   this.rotation += deltaRot * dt;
 
   wrapPosition(this);
+
+  // Update the ship's missiles.
+  this.missiles.forEach(function(m) {
+    m.update(dt);
+  })
 }
 
 Ship.prototype.draw = function(mvMatrix) {
@@ -121,8 +126,8 @@ Ship.prototype.draw = function(mvMatrix) {
   gl.drawArrays(gl.LINES, 0, this.boosting ? this.vertexBuffer.numItems : this.vertexBuffer.numItemsNoBoost);
 }
 
-Ship.prototype.ROTATION_RATE = 5;
-Ship.prototype.ACCELERATION = 15;
+Ship.prototype.ROTATION_RATE = 4.2;
+Ship.prototype.ACCELERATION = 12;
 Ship.prototype.FRICTION = 0.6;
 Ship.prototype.MISSILE_COOLDOWN = 0.2;
 
@@ -136,6 +141,7 @@ function Missile(position, rotation) {
   this.vertexBuffer.numItems = 2;
 
   this.dead = false;
+  this.travelled = 0;
 
   this.radius = 0;
   this.position = position || vec2.create();
@@ -152,6 +158,11 @@ Missile.prototype.update = function(dt) {
   var frameVelocity = vec2.clone(this.velocity);
   vec2.scale(frameVelocity, frameVelocity, dt);
   vec2.add(this.position, this.position, frameVelocity);
+
+  this.travelled += vec2.len(frameVelocity);
+  if (this.travelled > 20) {
+    this.dead = true;
+  }
 
   wrapPosition(this);
 }
