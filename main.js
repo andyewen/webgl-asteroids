@@ -101,22 +101,30 @@ function wrapPosition(object) {
 }
 
 function checkCollisions() {
-  // Returns the asteroid we collided with.
-  for (var asteroidI = 0; asteroidI < asteroids.length; asteroidI++) {
-    asteroid = asteroids[asteroidI];
-
-    var shipLines = ship.getTransformedLines();
-    var asteroidLines = asteroid.getTransformedLines();
-    // Check if any of the ship's lines intersect with any of the asteroid's.
-    for (var i = 0; i < shipLines.length; i++) {
-      for (var j = 0; j < asteroidLines.length; j++) {
-        if (linesIntersect(shipLines[i], asteroidLines[j])) {
-          collideAlert();
-          return asteroid;
-        }
+  asteroids.forEach(function(asteroid) {
+    missiles.forEach(function(missile) {
+      var overlapping = circlesOverlap(asteroid.position, asteroid.radius, missile.position, missile.radius),
+          bothAlive = !(asteroid.dead && missile.dead);
+      if (overlapping && bothAlive) {
+        asteroid.dead = missile.dead = true;
       }
+    });
+
+    if (circlesOverlap(ship.position, ship.radius, asteroid.position, asteroid.radius)) {
+      // Ship collided with an asteroid!
+      collideAlert();
     }
+  });
+
+  function filterAndCleanUp(go) {
+    if (go.dead) {
+      gl.deleteBuffer(go.vertexBuffer);
+      return false;
+    }
+    return true;
   }
+  ship.missiles = missiles = missiles.filter(filterAndCleanUp);
+  asteroids = asteroids.filter(filterAndCleanUp);
 }
 
 function update() {

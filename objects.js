@@ -61,6 +61,7 @@ function Ship(missiles) {
   this.boosting = false;
   this.missiles = missiles;
   this.missileCooldown = 0;
+  this.radius = 0;
 
   this.position = vec2.create();
   this.velocity = vec2.create();
@@ -134,6 +135,9 @@ function Missile(position, rotation) {
   this.vertexBuffer.itemSize = 3;
   this.vertexBuffer.numItems = 2;
 
+  this.dead = false;
+
+  this.radius = 0;
   this.position = position || vec2.create();
   this.rotation = rotation || 0;
 
@@ -188,6 +192,8 @@ function Asteroid(radius) {
                 gl.STATIC_DRAW);
   this.vertexBuffer.itemSize = 3;
   this.vertexBuffer.numItems = 12;
+
+  this.dead = false;
 
   this.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
   this.rotation = 0;

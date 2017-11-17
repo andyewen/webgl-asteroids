@@ -39,3 +39,8 @@ var collideAlert = (function() {
     }
   }
 })();
+
+function circlesOverlap(c1, r1, c2, r2) {
+  var delta = vec2.subtract(vec2.create(), c2, c1);
+  return vec2.sqrLen(delta) <= Math.pow(r1 + r2, 2);
+}
