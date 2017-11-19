@@ -60,8 +60,10 @@ function Ship() {
 
   this.boosting = false;
   this.missiles = [];
+  this.shootPressedLast = false;
   this.missileCooldown = 0;
   this.radius = 0;
+  this.lives = this.INITIAL_LIVES;
 
   this.position = vec2.create();
   this.velocity = vec2.create();
@@ -82,11 +84,12 @@ Ship.prototype.update = function(dt, controls) {
 
   this.missileCooldown -= dt;
   this.missileCooldown = Math.max(this.missileCooldown, 0);
-  if (this.missileCooldown <= 0 && controls.isKeyDown(90)) {
+  var shootPressed = controls.isKeyDown(90);
+  if (this.missileCooldown <= 0 && shootPressed && !this.shootPressedLast) {
     this.missiles.push(new Missile(vec2.clone(this.position), this.rotation));
     this.missileCooldown = this.MISSILE_COOLDOWN;
   }
-
+  this.shootPressedLast = shootPressed;
 
   var deltaRot = 0;
   if (controls.isKeyDown(37)) {
@@ -129,7 +132,8 @@ Ship.prototype.draw = function(mvMatrix) {
 Ship.prototype.ROTATION_RATE = 4.2;
 Ship.prototype.ACCELERATION = 12;
 Ship.prototype.FRICTION = 0.6;
-Ship.prototype.MISSILE_COOLDOWN = 0.2;
+Ship.prototype.MISSILE_COOLDOWN = 0.05;
+Ship.prototype.INITIAL_LIVES = 3;
 
 
 function Missile(position, rotation) {

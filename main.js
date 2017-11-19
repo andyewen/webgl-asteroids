@@ -111,9 +111,19 @@ function checkCollisions() {
       }
     });
 
-    if (circlesOverlap(ship.position, ship.radius, asteroid.position, asteroid.radius)) {
-      // Ship collided with an asteroid!
-      collideAlert();
+    var overlapping = circlesOverlap(ship.position, ship.radius, asteroid.position, asteroid.radius);
+    if (overlapping) {
+      asteroid.dead = true;
+      if (ship.lives > 1) {
+        ship.lives -= 1;
+      } else {
+        ship.lives = ship.INITIAL_LIVES;
+        score = 0;
+      }
+
+      ship.position = vec2.create();
+      ship.velocity = vec2.create();
+      ship.rotation = 0;
     }
   });
 
@@ -146,9 +156,15 @@ function update() {
 
   checkCollisions();
 
-  if (scoreElement) {
-    scoreElement.textContent = score;
+  function pad(s, n) {
+    var zeroes = '00000000';
+    s += '';
+    return zeroes.slice(0, Math.max(0, n - s.length)) + s;
   }
+
+  if (scoreElement) { scoreElement.textContent = pad(score, 4); }
+  if (livesElement) { livesElement.textContent = ship.lives; }
+
 }
 
 function draw() {
@@ -175,7 +191,8 @@ function draw() {
 }
 
 var canvas = document.getElementsByTagName("canvas")[0],
-    scoreElement = document.getElementById('score');
+    scoreElement = document.getElementById('score'),
+    livesElement = document.getElementById('lives');
 initGL(canvas);
 initViewport();
 initShaders();
