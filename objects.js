@@ -132,7 +132,7 @@ Ship.prototype.draw = function(mvMatrix) {
 Ship.prototype.ROTATION_RATE = 4.2;
 Ship.prototype.ACCELERATION = 12;
 Ship.prototype.FRICTION = 0.6;
-Ship.prototype.MISSILE_COOLDOWN = 0.05;
+Ship.prototype.MISSILE_COOLDOWN = 0.3;
 Ship.prototype.INITIAL_LIVES = 3;
 
 
@@ -187,7 +187,8 @@ Missile.prototype.draw = function(mvMatrix) {
 Missile.prototype.SPEED = 17;
 
 
-function Asteroid(radius) {
+function Asteroid(stage) {
+  var radius = this.STAGE_RADII[stage];
   this.vertexBuffer = gl.createBuffer();
   this.shape = []
   for (var i = 0; i < 12; i++) {
@@ -210,9 +211,10 @@ function Asteroid(radius) {
 
   this.dead = false;
 
+  this.stage = stage;
   this.position = vec2.create();
   this.rotation = 0;
-  this.velocity = vec2.random(vec2.create(), 0.8);
+  this.velocity = vec2.random(vec2.create(), 0.8 * (this.stage + 1));
   this.radius = radius;
 }
 
@@ -238,3 +240,5 @@ Asteroid.prototype.draw = function(mvMatrix) {
   setMatrixUniforms();
   gl.drawArrays(gl.LINE_LOOP, 0, this.vertexBuffer.numItems);
 }
+
+Asteroid.prototype.STAGE_RADII = [4, 2.8, 1.5];

@@ -127,6 +127,21 @@ function checkCollisions() {
     }
   });
 
+  var newAsteroids = [];
+  asteroids.forEach(function (a) {
+    if (a.dead && a.stage < 2) {
+      var stageSpawn = [0, 2, 3],
+          stage = a.stage + 1;
+      for (var i = 0; i < stageSpawn[stage]; i++) {
+        var newAsteroid = new Asteroid(stage);
+        newAsteroid.position = vec2.clone(a.position);
+        var offset = vec2.random(vec2.create(), 2);
+        vec2.add(newAsteroid.position, newAsteroid.position, offset);
+        newAsteroids.push(newAsteroid);
+      }
+    }
+  });
+
   function filterAndCleanUp(go) {
     if (go.dead) {
       gl.deleteBuffer(go.vertexBuffer);
@@ -136,6 +151,9 @@ function checkCollisions() {
   }
   ship.missiles = ship.missiles.filter(filterAndCleanUp);
   asteroids = asteroids.filter(filterAndCleanUp);
+
+  // Add spawned asteroids.
+  asteroids = asteroids.concat(newAsteroids);
 }
 
 function update() {
@@ -144,8 +162,8 @@ function update() {
   lastFrameTime = now;
 
   if (!asteroids.length) {
-    for (var i = 0; i < 12; i++) {
-      var newAsteroid = new Asteroid(2.2);
+    for (var i = 0; i < 6; i++) {
+      var newAsteroid = new Asteroid(0);
       asteroids.push(newAsteroid);
       do {
         newAsteroid.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
