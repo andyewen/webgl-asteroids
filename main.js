@@ -145,7 +145,12 @@ function update() {
 
   if (!asteroids.length) {
     for (var i = 0; i < 12; i++) {
-      asteroids.push(new Asteroid(2.2));
+      var newAsteroid = new Asteroid(2.2);
+      asteroids.push(newAsteroid);
+      do {
+        newAsteroid.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
+        var colliding = circlesOverlap(ship.position, ship.radius + 5, newAsteroid.position, newAsteroid.radius);
+      } while(colliding);
     }
   }
 

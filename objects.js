@@ -210,7 +210,7 @@ function Asteroid(radius) {
 
   this.dead = false;
 
-  this.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
+  this.position = vec2.create();
   this.rotation = 0;
   this.velocity = vec2.random(vec2.create(), 0.8);
   this.radius = radius;
