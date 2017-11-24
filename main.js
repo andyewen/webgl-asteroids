@@ -100,11 +100,29 @@ function wrapPosition(object) {
   if (object.position[1] < -h / 2) { object.position[1] += h; }
 }
 
+function randomPosition(w, h) {
+  return vec2.fromValues(Math.random() * w - (w / 2), Math.random() * h - (h / 2));
+}
+
+function setUpAsteroids() {
+  asteroids.forEach(function (a) { gl.deleteBuffer(a.vertexBuffer); });
+  asteroids = [];
+
+  for (var i = 0; i < 6; i++) {
+    var newAsteroid = new Asteroid(0);
+    asteroids.push(newAsteroid);
+    do {
+      newAsteroid.position = randomPosition(w, h);
+      var colliding = circlesOverlap(ship.position, ship.radius + 5, newAsteroid.position, newAsteroid.radius);
+    } while(colliding);
+  }
+}
+
 function checkCollisions() {
   asteroids.forEach(function(asteroid) {
     ship.missiles.forEach(function(missile) {
       var overlapping = circlesOverlap(asteroid.position, asteroid.radius, missile.position, missile.radius),
-          bothAlive = !(asteroid.dead && missile.dead);
+          bothAlive = !(asteroid.dead || missile.dead);
       if (overlapping && bothAlive) {
         asteroid.dead = missile.dead = true;
         score += 1;
@@ -115,13 +133,26 @@ function checkCollisions() {
     if (overlapping) {
       asteroid.dead = true;
       if (ship.lives > 1) {
+        // Remove a life.
         ship.lives -= 1;
       } else {
+        // Game over! reset.
         ship.lives = ship.INITIAL_LIVES;
         score = 0;
+        setUpAsteroids();
       }
 
-      ship.position = vec2.create();
+      do {
+        ship.position = randomPosition(w * 0.66, h * 0.66);
+        var overlapping = false;
+        for (var i = 0; i < asteroids.length; i++) {
+          var a = asteroids[i];
+          if (circlesOverlap(ship.position, ship.radius, a.position, a.radius * 2)) {
+            overlapping = true;
+            break;
+          }
+        }
+      } while (overlapping);
       ship.velocity = vec2.create();
       ship.rotation = 0;
     }
@@ -162,14 +193,7 @@ function update() {
   lastFrameTime = now;
 
   if (!asteroids.length) {
-    for (var i = 0; i < 6; i++) {
-      var newAsteroid = new Asteroid(0);
-      asteroids.push(newAsteroid);
-      do {
-        newAsteroid.position = vec2.fromValues(Math.random() * 40 - 20, Math.random() * 40 - 20);
-        var colliding = circlesOverlap(ship.position, ship.radius + 5, newAsteroid.position, newAsteroid.radius);
-      } while(colliding);
-    }
+    setUpAsteroids();
   }
 
   ship.update(dt, controls);
