@@ -108,8 +108,8 @@ function setUpAsteroids() {
   asteroids.forEach(function (a) { gl.deleteBuffer(a.vertexBuffer); });
   asteroids = [];
 
-  for (var i = 0; i < 6; i++) {
-    var newAsteroid = new Asteroid(0);
+  for (var i = 0; i < 4; i++) {
+    var newAsteroid = new Asteroid(0, stage);
     asteroids.push(newAsteroid);
     do {
       newAsteroid.position = randomPosition(w, h);
@@ -139,6 +139,7 @@ function checkCollisions() {
         // Game over! reset.
         ship.lives = ship.INITIAL_LIVES;
         score = 0;
+        stage = 0;
         setUpAsteroids();
       }
 
@@ -162,9 +163,9 @@ function checkCollisions() {
   asteroids.forEach(function (a) {
     if (a.dead && a.stage < 2) {
       var stageSpawn = [0, 2, 3],
-          stage = a.stage + 1;
-      for (var i = 0; i < stageSpawn[stage]; i++) {
-        var newAsteroid = new Asteroid(stage);
+          asteroidStage = a.stage + 1;
+      for (var i = 0; i < stageSpawn[asteroidStage]; i++) {
+        var newAsteroid = new Asteroid(asteroidStage, stage);
         newAsteroid.position = vec2.clone(a.position);
         var offset = vec2.random(vec2.create(), 2);
         vec2.add(newAsteroid.position, newAsteroid.position, offset);
@@ -194,6 +195,7 @@ function update() {
 
   if (!asteroids.length) {
     setUpAsteroids();
+    stage += 1;
   }
 
   ship.update(dt, controls);
@@ -247,6 +249,7 @@ initShaders();
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
 score = 0;
+stage = 0;
 ship = new Ship();
 asteroids = [];
 

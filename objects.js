@@ -187,7 +187,7 @@ Missile.prototype.draw = function(mvMatrix) {
 Missile.prototype.SPEED = 17;
 
 
-function Asteroid(stage) {
+function Asteroid(stage, gameStage) {
   var radius = this.STAGE_RADII[stage];
   this.vertexBuffer = gl.createBuffer();
   this.shape = []
@@ -214,7 +214,7 @@ function Asteroid(stage) {
   this.stage = stage;
   this.position = vec2.create();
   this.rotation = 0;
-  this.velocity = vec2.random(vec2.create(), 0.8 * (this.stage + 1));
+  this.velocity = vec2.random(vec2.create(), 1.1 * (this.stage + 1) + (0.2 * gameStage));
   this.radius = radius;
 }
 
