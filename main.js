@@ -120,7 +120,18 @@ initShaders();
 
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-var currentState = new Game();
+var states = {
+    'start': new Start(),
+    'game': new Game()
+}
+var nextState = states['start'];
+var currentState = states['start'];
+
+function changeState(stateCode) {
+    nextState = states[stateCode];
+}
+
+
 var lastFrameTime = new Date();
 
 function tick() {
@@ -129,6 +140,10 @@ function tick() {
     var now = new Date();
     var dt = (now - lastFrameTime) / 1000;
     lastFrameTime = now;
+
+    if (nextState != currentState) {
+        currentState = nextState;
+    }
 
     currentState.update(dt);
     currentState.draw();

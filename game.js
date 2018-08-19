@@ -57,6 +57,7 @@ Game.prototype.checkCollisions = function() {
             } else {
                 // Game over! reset.
                 self.reset();
+                changeState('start');
             }
 
             do {
