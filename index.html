@@ -1,47 +1,54 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Asteroids</title>
+<head>
+    <title>webgl-asteroids</title>
     <style>
-      html, body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        background-color: black;
-        font-family: monospace;
-        color: #777;
-      }
-      .container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      canvas {
-        border: 1px solid #777;
-      }
-      .controls {
-        float: right;
-      }
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            font-family: monospace;
+            color: #777;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            border: 1px solid #777;
+        }
+
+        .controls {
+            float: right;
+        }
     </style>
     <script src="lib/gl-matrix-min.js"></script>
     <script src="shaders.js"></script>
     <script src="objects.js"></script>
     <script src="collisions.js"></script>
     <script src="game.js"></script>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <div>
-        <canvas width="800" height="600"></canvas>
         <div>
-          <div class="controls">arrow keys to move, z to shoot</div>
-          <div>score: <span id="score"></span> lives: <span id="lives"></span></div>
+            <canvas width="800" height="600"></canvas>
+            <div>
+                <div class="controls">arrow keys to move, z to shoot</div>
+                <div>score:
+                    <span id="score"></span> lives:
+                    <span id="lives"></span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <script src="./main.js"></script>
-  </body>
+</body>
 </html>
