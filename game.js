@@ -13,6 +13,11 @@ Game.prototype.reset = function() {
     this.setUpAsteroids();
 }
 
+Game.prototype.cleanUp = function() {
+    var allObjects = [this.ship];
+    allObjects = allObjects.concat(this.asteroids);
+}
+
 Game.prototype.update = function(dt) {
     var self = this;
     if (!self.asteroids.length) {
@@ -87,7 +92,7 @@ Game.prototype.checkCollisions = function() {
 
     function filterAndCleanUp(go) {
         if (go.dead) {
-            gl.deleteBuffer(go.vertexBuffer);
+            go.cleanUp();
             return false;
         }
         return true;
@@ -100,7 +105,7 @@ Game.prototype.checkCollisions = function() {
 }
 
 Game.prototype.setUpAsteroids = function() {
-    this.asteroids.forEach(function (a) { gl.deleteBuffer(a.vertexBuffer); });
+    this.asteroids.forEach(function (a) { a.cleanUp(); });
     this.asteroids = [];
 
     for (var i = 0; i < 6; i++) {
