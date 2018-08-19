@@ -130,9 +130,9 @@ Ship.prototype.draw = function(mvMatrix) {
 }
 
 Ship.prototype.ROTATION_RATE = 4.2;
-Ship.prototype.ACCELERATION = 12;
+Ship.prototype.ACCELERATION = 16;
 Ship.prototype.FRICTION = 0.6;
-Ship.prototype.MISSILE_COOLDOWN = 0.3;
+Ship.prototype.MISSILE_COOLDOWN = 0.15;
 Ship.prototype.INITIAL_LIVES = 3;
 
 
@@ -184,7 +184,7 @@ Missile.prototype.draw = function(mvMatrix) {
   gl.drawArrays(gl.LINE_STRIP, 0, this.vertexBuffer.numItems);
 }
 
-Missile.prototype.SPEED = 17;
+Missile.prototype.SPEED = 32;
 
 
 function Asteroid(stage, gameStage) {
