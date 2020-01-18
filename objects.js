@@ -77,19 +77,21 @@ function Ship() {
 
 Ship.prototype = new GameObject();
 Ship.prototype.update = function (dt, controls) {
-    this.boosting = false;
-    if (controls.isKeyDown(38)) {
+    var gamepad = controls.getGamepad();
+    this.boosting = controls.isKeyDown(38) || (gamepad && gamepad.buttons[0].pressed);
+    if (this.boosting) {
         var acceleration = vec2.fromValues(Math.cos(this.rotation),
             Math.sin(this.rotation));
         vec2.scale(acceleration, acceleration, dt * this.ACCELERATION);
         vec2.add(this.velocity, this.velocity, acceleration);
-
-        this.boosting = true;
     }
 
     this.missileCooldown -= dt;
     this.missileCooldown = Math.max(this.missileCooldown, 0);
     var shootPressed = controls.isKeyDown(90);
+    if (gamepad && gamepad.buttons[1].pressed) {
+        shootPressed = true;
+    }
     if (this.missileCooldown <= 0 && shootPressed && !this.shootPressedLast) {
         this.missiles.push(new Missile(vec2.clone(this.position), this.rotation));
         this.missileCooldown = this.MISSILE_COOLDOWN;
@@ -97,6 +99,11 @@ Ship.prototype.update = function (dt, controls) {
     this.shootPressedLast = shootPressed;
 
     var deltaRot = 0;
+    if (gamepad) {
+        var axis = -gamepad.axes[0];
+        if (Math.abs(axis) < 0.2) axis = 0;
+        deltaRot = axis * this.ROTATION_RATE;
+    }
     if (controls.isKeyDown(37)) {
         deltaRot += this.ROTATION_RATE;
     }

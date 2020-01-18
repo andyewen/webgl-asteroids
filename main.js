@@ -31,7 +31,10 @@ var controls = {
     isKeyDown: function (keyCode) {
         return Boolean(this.keyStates[keyCode]);
     },
-    keyStates: []
+    keyStates: [],
+    getGamepad: function() {
+        return navigator.getGamepads()[0];
+    }
 };
 document.addEventListener("keyup", function (e) {
     controls.keyStates[e.keyCode] = false;
