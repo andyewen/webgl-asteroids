@@ -362,7 +362,8 @@ function Start() {
 
 Start.prototype = {
     update: function(dt) {
-        if (controls.isKeyDown(90)) {
+        var gamepad = controls.getGamepad();
+        if (controls.isKeyDown(90) || gamepad && gamepad.buttons[1].pressed) {
             changeState('game');
         }
     },
